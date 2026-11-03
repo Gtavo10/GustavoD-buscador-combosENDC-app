@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3GPP EN-DC Configurations Explorer | Filtro de Bandas LTE y NR</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="header-titles">
+          <div class="badge-title">
+            <span class="pulse-dot"></span>
+            <span>3GPP TS 38.101-3</span>
+          </div>
+          <h1 class="main-title">EN-DC Configurations Explorer</h1>
+          <p class="subtitle">
+            Consulta y filtra combinaciones soportadas de E-UTRA (LTE) y NR (5G) Dual Connectivity según especificaciones 3GPP
+          </p>
+        </div>
+
+        <div class="header-actions">
+          <div class="status-card">
+            <div class="status-item">
+              <span class="status-label">Total Combinaciones:</span>
+              <span class="status-val" id="totalDbCount">{{ total_records }}</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Especificación:</span>
+              <span class="status-val" id="specInfo">{{ spec_info }}</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Última actualización:</span>
+              <span class="status-val" id="lastUpdated">{{ last_updated }}</span>
+            </div>
+          </div>
+
+          <button id="btnRefresh" class="btn btn-secondary btn-refresh" title="Actualizar datos desde sqimway.com">
+            <svg class="icon spin-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+            </svg>
+            <span id="refreshBtnText">Actualizar Datos</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Filter Card -->
+      <section class="card filter-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            Filtros por Bandas y Criterios
+          </h2>
+          <span class="helper-text">Indica las bandas LTE y/o NR que deseas consultar</span>
+        </div>
+
+        <div class="filter-body">
+          <div class="filter-grid">
+            <!-- LTE Bands Section -->
+            <div class="filter-col">
+              <label for="inputLteBands" class="field-label">
+                <span class="band-indicator lte-indicator">LTE</span>
+                Bandas LTE (E-UTRA)
+              </label>
+              <div class="input-wrapper">
+                <input 
+                  type="text" 
+                  id="inputLteBands" 
+                  class="text-input" 
+                  placeholder="Ej: 1, 3, 7, 28 (o B1, B3...)"
+                  autocomplete="off"
+                >
+                <button type="button" class="btn-clear-field" id="clearLteBtn" title="Limpiar bandas LTE">&times;</button>
+              </div>
+              <div class="quick-chips-wrapper">
+                <span class="quick-label">Sugerencias rápidas LTE:</span>
+                <div class="chips-container" id="lteQuickChips">
+                  <button type="button" class="chip" data-band="1">B1</button>
+                  <button type="button" class="chip" data-band="2">B2</button>
+                  <button type="button" class="chip" data-band="3">B3</button>
+                  <button type="button" class="chip" data-band="4">B4</button>
+                  <button type="button" class="chip" data-band="5">B5</button>
+                  <button type="button" class="chip" data-band="7">B7</button>
+                  <button type="button" class="chip" data-band="8">B8</button>
+                  <button type="button" class="chip" data-band="20">B20</button>
+                  <button type="button" class="chip" data-band="28">B28</button>
+                  <button type="button" class="chip" data-band="38">B38</button>
+                  <button type="button" class="chip" data-band="40">B40</button>
+                  <button type="button" class="chip" data-band="41">B41</button>
+                  <button type="button" class="chip" data-band="66">B66</button>
+                  <button type="button" class="chip" data-band="71">B71</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- NR Bands Section -->
+            <div class="filter-col">
+              <label for="inputNrBands" class="field-label">
+                <span class="band-indicator nr-indicator">NR</span>
+                Bandas 5G NR
+              </label>
+              <div class="input-wrapper">
+                <input 
+                  type="text" 
+                  id="inputNrBands" 
+                  class="text-input" 
+                  placeholder="Ej: n78, n77, n1, n28 (o 78, 77...)"
+                  autocomplete="off"
+                >
+                <button type="button" class="btn-clear-field" id="clearNrBtn" title="Limpiar bandas NR">&times;</button>
+              </div>
+              <div class="quick-chips-wrapper">
+                <span class="quick-label">Sugerencias rápidas NR:</span>
+                <div class="chips-container" id="nrQuickChips">
+                  <button type="button" class="chip" data-band="1">n1</button>
+                  <button type="button" class="chip" data-band="3">n3</button>
+                  <button type="button" class="chip" data-band="5">n5</button>
+                  <button type="button" class="chip" data-band="7">n7</button>
+                  <button type="button" class="chip" data-band="8">n8</button>
+                  <button type="button" class="chip" data-band="20">n20</button>
+                  <button type="button" class="chip" data-band="28">n28</button>
+                  <button type="button" class="chip" data-band="40">n40</button>
+                  <button type="button" class="chip" data-band="41">n41</button>
+                  <button type="button" class="chip" data-band="77">n77</button>
+                  <button type="button" class="chip" data-band="78">n78</button>
+                  <button type="button" class="chip" data-band="79">n79</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matching Options & Additional Filters -->
+          <div class="options-row">
+            <div class="option-group">
+              <label class="field-label">Criterio de Coincidencia:</label>
+              <div class="radio-toggle-group">
+                <label class="radio-chip">
+                  <input type="radio" name="matchMode" value="all" checked>
+                  <span class="radio-label">
+                    <strong>Contiene todas (AND)</strong>
+                    <small>Incluye todas las bandas indicadas</small>
+                  </span>
+                </label>
+                <label class="radio-chip">
+                  <input type="radio" name="matchMode" value="any">
+                  <span class="radio-label">
+                    <strong>Cualquiera (OR)</strong>
+                    <small>Al menos una de las bandas</small>
+                  </span>
+                </label>
+                <label class="radio-chip">
+                  <input type="radio" name="matchMode" value="exact">
+                  <span class="radio-label">
+                    <strong>Exacta</strong>
+                    <small>Únicamente las bandas indicadas</small>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div class="option-group">
+              <label for="selectCategory" class="field-label">Categoría 3GPP:</label>
+              <select id="selectCategory" class="select-input">
+                <option value="all">Todas las categorías</option>
+                <option value="intra">Todas Intra-banda</option>
+                <option value="intra_1">Intra-banda Contigua</option>
+                <option value="intra_2">Intra-banda No Contigua</option>
+                <option value="inter">Todas Inter-banda</option>
+                <option value="inter_2">Inter-banda (2 bandas)</option>
+                <option value="inter_3">Inter-banda (3 bandas)</option>
+                <option value="inter_4">Inter-banda (4 bandas)</option>
+                <option value="inter_5">Inter-banda (5 bandas)</option>
+                <option value="inter_6">Inter-banda (6 bandas)</option>
+              </select>
+            </div>
+
+            <div class="option-group">
+              <label for="inputSearchText" class="field-label">Búsqueda rápida en texto:</label>
+              <input 
+                type="text" 
+                id="inputSearchText" 
+                class="text-input" 
+                placeholder="Ej: n78(2A), 1C, DC_3A..."
+              >
+            </div>
+          </div>
+
+          <!-- Buttons Row -->
+          <div class="filter-actions-row">
+            <button id="btnApplyFilter" class="btn btn-primary">
+              <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              Filtrar Combinaciones
+            </button>
+            <button id="btnResetFilter" class="btn btn-outline">
+              <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
+              Limpiar Filtros
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Section -->
+      <section class="card results-card">
+        <div class="results-header">
+          <div class="results-meta">
+            <h2 class="card-title">
+              Combinaciones EN-DC Encontradas:
+              <span id="resultsCountBadge" class="results-count-pill">0</span>
+            </h2>
+            <div id="activeFiltersSummary" class="active-filters-tags"></div>
+          </div>
+
+          <!-- Actions Toolbar: Copy & Export -->
+          <div class="export-actions">
+            <button id="btnCopyResults" class="btn btn-secondary" title="Copiar resultados al portapapeles">
+              <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copiar Lista</span>
+            </button>
+
+            <button id="btnExportCsv" class="btn btn-success" title="Descargar resultados en archivo CSV para Excel">
+              <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Exportar a CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Category breakdown badges -->
+        <div id="categoryBreakdown" class="category-breakdown-bar"></div>
+
+        <!-- Table Container -->
+        <div class="table-responsive">
+          <table class="data-table" id="endcTable">
+            <thead>
+              <tr>
+                <th class="col-config">Configuración EN-DC</th>
+                <th class="col-category">Categoría 3GPP</th>
+                <th class="col-lte">Bandas LTE</th>
+                <th class="col-nr">Bandas NR</th>
+                <th class="col-ul">Configuración Uplink (UL)</th>
+                <th class="col-detail">Detalle E-UTRA / NR</th>
+                <th class="col-actions">Detalles</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Rendered dynamically by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <svg class="empty-icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+          <h3>No se encontraron combinaciones coincidentes</h3>
+          <p>Prueba ajustando el criterio de coincidencia a "Cualquiera (OR)" o verifica los números de banda indicados.</p>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-bar" id="paginationBar">
+          <div class="pagination-info">
+            Mostrando <span id="pageRangeText">1 - 50</span> de <span id="pageTotalCount">0</span>
+          </div>
+
+          <div class="pagination-size">
+            <label for="pageSizeSelect">Filas por página:</label>
+            <select id="pageSizeSelect" class="select-sm">
+              <option value="25">25</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+              <option value="250">250</option>
+              <option value="1000">1000</option>
+              <option value="all">Todas</option>
+            </select>
+          </div>
+
+          <div class="pagination-nav">
+            <button id="btnPrevPage" class="btn-page" title="Página anterior">&laquo; Anterior</button>
+            <div id="pageNumbers" class="page-numbers-container"></div>
+            <button id="btnNextPage" class="btn-page" title="Página siguiente">Siguiente &raquo;</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal-backdrop" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <span class="modal-tag">Detalle de Configuración 3GPP</span>
+            <h3 id="modalConfigTitle" class="modal-title">DC_1A-3A_n78A</h3>
+          </div>
+          <button id="modalCloseBtn" class="modal-close">&times;</button>
+        </div>
+
+        <div class="modal-body" id="modalBody">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="modal-footer">
+          <button id="modalCopyBtn" class="btn btn-secondary">
+            <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copiar Configuración
+          </button>
+          <button id="modalCloseFooterBtn" class="btn btn-primary">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="toast" style="display: none;">
+      <svg id="toastIcon" class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <span id="toastMessage">Acción completada con éxito</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>
+        Fuente de datos: <a href="https://www.sqimway.com/nr_endc.php" target="_blank" rel="noopener noreferrer">sqimway.com / E-UTRA & NR Dual Connectivity (3GPP TS 38.101-3)</a>.
+        Diseñado para análisis de ingeniería de redes móviles, homologación de terminales y optimización de espectro LTE/5G.
+      </p>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
